@@ -2,7 +2,6 @@ import pandas as pd
 
 def _generate_alerts(df, stats_df, outliers_df, missing_df):
     alerts = []
-
     n_rows = len(df)
 
     # ---------------- Missing value alerts ----------------
@@ -71,3 +70,4 @@ def _generate_alerts(df, stats_df, outliers_df, missing_df):
             )
 
     return alerts
+
