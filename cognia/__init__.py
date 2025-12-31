@@ -25,6 +25,3 @@ __all__ = [
     "quick_eda",
     "eda_report"
 ]
-
-# df=pd.read_csv(r"c:/Users/Kashish Pundir/Downloads/Datasets/House_Price.csv")
-# df=pd.read_csv(r"c:/Users/Kashish Pundir/Downloads/Datasets/laptopPrice.csv")
