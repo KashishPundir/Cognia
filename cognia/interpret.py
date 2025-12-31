@@ -18,7 +18,7 @@ def interpret_distribution(summary_df: pd.DataFrame) -> pd.DataFrame:
         else:
             skew_text = "The distribution is left-skewed, indicating the presence of lower-value outliers."
 
-        # ---- Kurtosis interpretation ----
+        # ---- Kurtosis interpretation ---
         if abs(kurt) < 1:
             kurt_text = "The distribution has moderate tails, similar to a normal distribution."
         elif kurt > 0:
@@ -34,4 +34,5 @@ def interpret_distribution(summary_df: pd.DataFrame) -> pd.DataFrame:
         })
 
     return pd.DataFrame(interpretations)
+
 
