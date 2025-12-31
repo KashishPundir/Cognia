@@ -1,0 +1,24 @@
+[build-system]
+requires = ["setuptools>=61.0"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "cognia"
+version = "0.1.0"
+description = "Cognia: Automated Exploratory Data Analysis (EDA) Library"
+readme = "README.md"
+requires-python = ">=3.8"
+authors = [
+  { name = "Kashish Pundir", email = "kashishpundir1303@gmail.com" }
+]
+
+dependencies = [
+  "pandas>=1.5",
+  "numpy>=1.23",
+  "matplotlib>=3.6",
+  "seaborn>=0.12"
+]
+
+[tool.setuptools.packages.find]
+where = ["."]
+include = ["cognia*"]
