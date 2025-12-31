@@ -12,8 +12,6 @@ from .corr import (
     full_correlation_heatmap
 )
 
-
-
 # ===================== HELPERS =====================
 
 def _df_to_html(df: pd.DataFrame) -> str:
@@ -340,3 +338,4 @@ def eda_report(
         f.write(html)
 
     return output_file
+
