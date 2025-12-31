@@ -1,6 +1,3 @@
-<p align="center">
-  <img src="assets/cognia_logo.png" alt="Cognia Logo" width="220"/>
-</p>
 
 <h1 align="center"> Cognia</h1>
 
@@ -171,3 +168,4 @@ Cognia makes that possible.
 
 
 If you find Cognia useful, don’t forget to ⭐ star the repository and share it with fellow data enthusiasts.
+
