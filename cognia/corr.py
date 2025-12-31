@@ -1,5 +1,3 @@
-# cognia/corr.py
-
 import numpy as np
 import pandas as pd
 import matplotlib.pyplot as plt
@@ -49,3 +47,4 @@ def full_correlation_heatmap(df):
 
     plt.tight_layout()
     return _encode_plot()
+
