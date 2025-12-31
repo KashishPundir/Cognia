@@ -14,7 +14,7 @@ def quick_eda(df):
     Runs complete EDA pipeline.
     """
     stats = numeric_summary(df)
-
+    
     return {
         "overview": dataset_overview(df),
         "missing": missing_report(df),
@@ -27,3 +27,4 @@ def quick_eda(df):
             "full_correlation_heatmap": full_correlation_heatmap(df)
         }
     }
+
