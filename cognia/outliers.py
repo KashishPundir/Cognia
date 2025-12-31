@@ -6,9 +6,8 @@ def outlier_detect(df: pd.DataFrame) -> pd.DataFrame:
     """
     if not isinstance(df, pd.DataFrame):
         raise TypeError("Input must be a pandas DataFrame")
-
+        
     numeric_df = df.select_dtypes(include="number")
-
     rows = []
 
     for col in numeric_df.columns:
@@ -36,4 +35,5 @@ def outlier_detect(df: pd.DataFrame) -> pd.DataFrame:
         })
 
     return pd.DataFrame(rows)
+
 
