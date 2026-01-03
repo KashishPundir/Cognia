@@ -12,6 +12,8 @@ from .corr import (
     full_correlation_heatmap
 )
 
+
+
 # ===================== HELPERS =====================
 
 def _df_to_html(df: pd.DataFrame) -> str:
@@ -30,11 +32,20 @@ def _df_to_html(df: pd.DataFrame) -> str:
     )
 
 
-def _encode_plot() -> str:
-    buffer = BytesIO()
-    plt.savefig(buffer, format="png", bbox_inches="tight")
-    plt.close()
-    return base64.b64encode(buffer.getvalue()).decode()
+# def _encode_plot() -> str:
+#     buffer = BytesIO()
+#     plt.savefig(buffer, format="png", bbox_inches="tight")
+#     plt.close()
+#     return base64.b64encode(buffer.getvalue()).decode()
+
+def _encode_plot(fig):
+    import io, base64
+
+    buf = io.BytesIO()
+    fig.savefig(buf, format="png", bbox_inches="tight")
+    buf.seek(0)
+
+    return base64.b64encode(buf.read()).decode("utf-8")
 
 
 def _categorical_charts(df):
@@ -43,31 +54,33 @@ def _categorical_charts(df):
     for col in df.select_dtypes(exclude="number").columns:
         counts = df[col].value_counts().head(10)
 
-        plt.figure(figsize=(7, 4))
+        # Safety check
+        if counts.empty or counts.nunique() <= 1:
+            continue
 
-        # 🔹 Generate DIFFERENT colors dynamically
+        fig, ax = plt.subplots(figsize=(7, 4))
+
         colors = plt.cm.Set3(range(len(counts)))
 
-        bars = plt.bar(
+        bars = ax.bar(
             counts.index.astype(str),
             counts.values,
             color=colors
         )
 
-        plt.title(f"{col} – Category Distribution", fontsize=12)
-        plt.ylabel("Count")
-        plt.xticks(rotation=45, ha="right")
+        ax.set_title(f"{col} – Category Distribution", fontsize=12)
+        ax.set_ylabel("Count")
+        ax.set_xticks(range(len(counts)))
+        ax.set_xticklabels(counts.index.astype(str), rotation=45, ha="right")
 
-        # 🔹 Add padding at top so labels are visible
         max_val = counts.values.max()
-        plt.ylim(0, max_val * 1.15)
+        ax.set_ylim(0, max_val * 1.15)
 
-        # 🔹 ADD COUNT LABELS ABOVE BARS
         for bar in bars:
             height = bar.get_height()
-            plt.text(
+            ax.text(
                 bar.get_x() + bar.get_width() / 2,
-                height + max_val * 0.02,   # push text above bar
+                height + max_val * 0.02,
                 f"{int(height)}",
                 ha="center",
                 va="bottom",
@@ -76,27 +89,41 @@ def _categorical_charts(df):
             )
 
         plt.tight_layout()
-        charts[col] = _encode_plot()
+
+        # 🔴 THIS IS THE KEY FIX
+        charts[col] = _encode_plot(fig)
+
+        plt.close(fig)
 
     return charts
 
 
-
 def _numeric_charts(df):
     charts = {}
+
     for col in df.select_dtypes(include="number").columns:
-        plt.figure(figsize=(7, 4))
-        plt.hist(
-            df[col].dropna(),
+        data = df[col].dropna()
+
+        # Skip empty numeric columns
+        if data.empty:
+            continue
+
+        fig, ax = plt.subplots(figsize=(7, 4))
+
+        ax.hist(
+            data,
             bins=30,
-            color="#4C72B0",
             edgecolor="black"
         )
-        plt.title(f"{col} – Distribution", fontsize=12)
-        plt.xlabel(col)
-        plt.ylabel("Frequency")
+
+        ax.set_title(f"{col} – Distribution", fontsize=12)
+        ax.set_xlabel(col)
+        ax.set_ylabel("Frequency")
+
         plt.tight_layout()
-        charts[col] = _encode_plot()
+
+        charts[col] = _encode_plot(fig)   # ✅ pass figure
+        plt.close(fig)                    # ✅ close explicitly
 
     return charts
 
@@ -135,6 +162,8 @@ def eda_report(
 
     # ---------- Correlation logic ----------
     corr_section_html = ""
+    first_num = next(iter(num_charts)) if num_charts else None
+    first_cat = next(iter(cat_charts)) if cat_charts else None
 
     numeric_cols = df.select_dtypes(include="number").columns.tolist()
 
@@ -159,6 +188,55 @@ def eda_report(
             corr_section_html += f"""
             <img src="data:image/png;base64,{full_img}" />
             """
+
+
+    # ---------- Explorer Sections (Safe Rendering) ----------
+
+    cat_explorer_html = (
+        f"""
+        <div class="section">
+            <h2>6️⃣ Categorical Column Explorer</h2>
+            <div style="text-align:center;">
+                <select onchange="document.getElementById('catImg').src = catCharts[this.value]">
+                    {''.join([f"<option value='{c}'>{c}</option>" for c in cat_charts])}
+                </select>
+            </div>
+            <img id="catImg" src="data:image/png;base64,{cat_charts[first_cat]}" />
+        </div>
+        """
+        if cat_charts else
+        """
+        <div class="section">
+            <h2>6️⃣ Categorical Column Explorer</h2>
+            <p style="text-align:center;color:#777;font-size:16px;">
+                🚫 No categorical columns exist in this dataset.
+            </p>
+        </div>
+        """
+    )
+
+    num_explorer_html = (
+        f"""
+        <div class="section">
+            <h2>7️⃣ Numeric Column Explorer</h2>
+            <div style="text-align:center;">
+                <select onchange="document.getElementById('numImg').src = numCharts[this.value]">
+                    {''.join([f"<option value='{c}'>{c}</option>" for c in num_charts])}
+                </select>
+            </div>
+            <img id="numImg" src="data:image/png;base64,{num_charts[first_num]}" />
+        </div>
+        """
+        if num_charts else
+        """
+        <div class="section">
+            <h2>7️⃣ Numeric Column Explorer</h2>
+            <p style="text-align:center;color:#777;font-size:16px;">
+                🚫 No numerical columns exist in this dataset.
+            </p>
+        </div>
+        """
+    )
 
 
 
@@ -286,30 +364,8 @@ def eda_report(
             {_df_to_html(outliers)}
         </div>
 
-        <div class="section">
-            <h2>6️⃣ Categorical Column Explorer</h2>
-            <div style="text-align:center;">
-                <select onchange="document.getElementById('catImg').src = catCharts[this.value]">
-                    {''.join([f"<option value='{c}'>{c}</option>" for c in cat_charts])}
-                </select>
-            </div>
-            <img id="catImg" />
-        </div>
-
-        <div class="section">
-            <h2>7️⃣ Numeric Column Explorer</h2>
-            <div style="text-align:center;">
-                <select onchange="document.getElementById('numImg').src = numCharts[this.value]">
-                    {''.join([f"<option value='{c}'>{c}</option>" for c in num_charts])}
-                </select>
-            </div>
-            <img id="numImg" />
-        </div>
-
-        <div class="section">
-            <h2>Correlation Analysis</h2>
-            {corr_section_html}
-        </div>
+        {cat_explorer_html}
+        {num_explorer_html}
 
 
         <div class="section">
@@ -338,4 +394,3 @@ def eda_report(
         f.write(html)
 
     return output_file
-
