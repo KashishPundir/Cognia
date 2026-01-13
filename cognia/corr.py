@@ -3,7 +3,7 @@ import pandas as pd
 import matplotlib.pyplot as plt
 from io import BytesIO
 import base64
-
+import seaborn as sns
 
 # ---------------- Utility ----------------
 
@@ -30,21 +30,30 @@ def top_correlated_pairs(df, threshold=0.6, top_n=10):
         .sort_values("Correlation", ascending=False)
     )
 
-    return pairs[pairs["Correlation"] >= threshold].head(top_n)
-
+    return (
+        pairs[pairs["Correlation"] >= threshold]
+        .head(top_n)
+        .reset_index(drop=True)   
+    )
 
 
 def full_correlation_heatmap(df):
     corr = df.select_dtypes(include="number").corr()
 
     plt.figure(figsize=(8, 6))
-    plt.imshow(corr, cmap="coolwarm")
-    plt.colorbar()
 
-    plt.xticks(range(len(corr)), corr.columns, rotation=45, ha="right")
-    plt.yticks(range(len(corr)), corr.columns)
-    plt.title("Full Correlation Heatmap")
+    sns.heatmap(
+        corr,
+        annot=True,              # SHOW NUMBERS
+        fmt=".2f",
+        cmap="coolwarm",
+        linewidths=0.5,
+        cbar=True,
+        square=True
+    )
 
+    plt.title("Full Correlation Heatmap", fontsize=14)
     plt.tight_layout()
+
     return _encode_plot()
 
