@@ -1,6 +1,13 @@
 
 <h1 align="center"> Cognia</h1>
 
+<p align="center">
+  <a href="https://opensource.org/licenses/MIT">
+    <img src="https://img.shields.io/badge/License-MIT-yellow.svg" alt="License: MIT">
+  </a>
+  <img src="https://img.shields.io/badge/Python-3.9%2B-blue.svg" alt="Python 3.9+">
+</p>
+
 <h3><p align="center">
    <b>Automated Exploratory Data Analysis</b>
 </p></h3>
@@ -17,8 +24,8 @@
   visualizations, and warnings instantly.
 </p>
 
-
-## ✨ Why Cognia?
+---
+### ✨ Why Cognia?
 
 Before building:
 
@@ -27,7 +34,6 @@ Before building:
 - Dashboards or business insights
 
 You must understand your data.
-
 However, traditional EDA is often:
 
 ❌ Time-consuming
@@ -35,9 +41,10 @@ However, traditional EDA is often:
 ❌ Repetitive
 
 
-### 👉 Cognia automates this entire process.
+## 👉 Cognia automates this entire process.
 
-## 📁 Project Structure:
+---
+### 📁 Project Structure:
 
 ```
 COGNIA/
@@ -62,8 +69,8 @@ COGNIA/
 ├── pyproject.toml              # Build & dependency configuration
 ├── README.md                   # Project documentation
 ```
-
-## 🔍 What Cognia Analyzes:
+---
+### 🔍 What Cognia Analyzes:
 
 Cognia generates a complete EDA report covering:
 
@@ -117,8 +124,8 @@ Cognia generates a complete EDA report covering:
 - Extreme skewness & outliers
 - Potential modeling issues
 
-
-## 🧪 How to Use Cognia?
+---
+### 🧪 How to Use Cognia?
 
 ```
 from cognia import eda_report
@@ -132,16 +139,16 @@ eda_report(df)
 
 ✔️ No configuration required.
 
-
-## 📦 Installation:
+---
+### 📦 Installation:
 
 Clone the repository and install locally:
 
 ```
 pip install -e .
 ```
-
-## 🛠 Built With:
+---
+### 🛠 Built With:
 
 🐍 Python 3.8+
 
@@ -155,18 +162,25 @@ pip install -e .
 
 Lightweight • Fast • Beginner-friendly • Extensible
 
-## LICENSE:
-This project is licensed under the MIT License – see the [LICENSE](LICENSE) file for details.
-## 🏁 Philosophy:
+---
+### 📄 LICENSE:
+This project is licensed under the MIT License – see the [LICENSE](https://github.com/KashishPundir/Cognia/blob/main/LICENSE) file for details.
 
-If you can load a DataFrame,
-you should be able to understand it.
+---
+### 🏁 Philosophy
 
-Cognia makes that possible.
+<p align="center">
+  <i>
+       If you can load a DataFrame,
+       you should be able to understand it.
+       Cognia makes that possible.
+  </i>
+</p>
 
-
+---
 
 If you find Cognia useful, don’t forget to ⭐ star the repository and share it with fellow data enthusiasts.
+
 
 
 
