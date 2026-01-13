@@ -2,7 +2,7 @@ import pandas as pd
 
 def interpret_distribution(summary_df: pd.DataFrame) -> pd.DataFrame:
     """
-    Generates natural language interpretation for skewness and kurtosis.
+    Generates concise statistical interpretation for skewness and kurtosis.
     """
     interpretations = []
 
@@ -12,27 +12,25 @@ def interpret_distribution(summary_df: pd.DataFrame) -> pd.DataFrame:
 
         # ---- Skewness interpretation ----
         if abs(skew) < 0.5:
-            skew_text = "The distribution is approximately symmetric."
+            skew_text = "Approximately symmetric"
         elif skew > 0:
-            skew_text = "The distribution is right-skewed, indicating the presence of higher-value outliers."
+            skew_text = "Right-skewed (positive skew)"
         else:
-            skew_text = "The distribution is left-skewed, indicating the presence of lower-value outliers."
+            skew_text = "Left-skewed (negative skew)"
 
-        # ---- Kurtosis interpretation ---
-        if abs(kurt) < 1:
-            kurt_text = "The distribution has moderate tails, similar to a normal distribution."
+        # ---- Kurtosis interpretation (excess kurtosis assumed) ----
+        if abs(kurt) < 0.5:
+            kurt_text = "Normal-like tails"
         elif kurt > 0:
-            kurt_text = "The distribution has heavy tails, suggesting a higher likelihood of extreme values."
+            kurt_text = "Heavy-tailed (outlier-prone)"
         else:
-            kurt_text = "The distribution has light tails, suggesting fewer extreme values."
+            kurt_text = "Light-tailed (few outliers)"
 
         interpretations.append({
             "column": col,
             "skewness": round(skew, 3),
             "kurtosis": round(kurt, 3),
-            "interpretation": f"{skew_text} {kurt_text}"
+            "interpretation": f"{skew_text}; {kurt_text}"
         })
 
     return pd.DataFrame(interpretations)
-
-
