@@ -155,6 +155,8 @@ pip install -e .
 
 Lightweight • Fast • Beginner-friendly • Extensible
 
+## LICENSE:
+This project is licensed under the MIT License – see the [LICENSE](LICENSE) file for details.
 ## 🏁 Philosophy:
 
 If you can load a DataFrame,
@@ -165,6 +167,7 @@ Cognia makes that possible.
 
 
 If you find Cognia useful, don’t forget to ⭐ star the repository and share it with fellow data enthusiasts.
+
 
 
 
