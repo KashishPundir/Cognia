@@ -167,6 +167,14 @@ Lightweight • Fast • Beginner-friendly • Extensible
 This project is licensed under the MIT License – see the [LICENSE](https://github.com/KashishPundir/Cognia/blob/main/LICENSE) file for details.
 
 ---
+
+
+### 📦 **Published on PyPI**
+```
+https://pypi.org/project/cognia/0.1.0/
+```
+
+---
 ### 🏁 Philosophy
 
 <p align="center">
@@ -180,6 +188,7 @@ This project is licensed under the MIT License – see the [LICENSE](https://git
 ---
 
 If you find Cognia useful, don’t forget to ⭐ star the repository and share it with fellow data enthusiasts.
+
 
 
 
