@@ -1,6 +1,7 @@
+import os
 from cognia import eda_report
-import pandas as pd
 
-# Data Loading
-df=pd.read_csv(r"c:/Users/Kashish Pundir/Downloads/Datasets/laptopPrice.csv")
-eda_report(df)
+html_path = eda_report(df)
+
+# Open html file -> Directing to new page in browser
+os.startfile(html_path)
