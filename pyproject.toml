@@ -15,10 +15,12 @@ authors = [
 dependencies = [
   "pandas>=1.5",
   "numpy>=1.23",
-  "matplotlib>=3.6",
+  "matplotlib>=3.8",
   "seaborn>=0.12"
 ]
 
 [tool.setuptools.packages.find]
 where = ["."]
 include = ["cognia*"]
+[project]
+license = { text = "MIT" }
