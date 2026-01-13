@@ -18,7 +18,7 @@ from .corr import (
 
 def _df_to_html(df: pd.DataFrame) -> str:
     if df is None or df.empty:
-        return "<p><i>No data available</i></p>"
+        return "<p><i>No ambiguity found.</i></p>"
 
     # Simplify column names
     df = df.copy()
@@ -32,11 +32,6 @@ def _df_to_html(df: pd.DataFrame) -> str:
     )
 
 
-# def _encode_plot() -> str:
-#     buffer = BytesIO()
-#     plt.savefig(buffer, format="png", bbox_inches="tight")
-#     plt.close()
-#     return base64.b64encode(buffer.getvalue()).decode()
 
 def _encode_plot(fig):
     import io, base64
@@ -50,82 +45,96 @@ def _encode_plot(fig):
 
 def _categorical_charts(df):
     charts = {}
+    valid_cols = []
+    idx = 0
 
     for col in df.select_dtypes(exclude="number").columns:
         counts = df[col].value_counts().head(10)
 
-        # Safety check
         if counts.empty or counts.nunique() <= 1:
             continue
 
         fig, ax = plt.subplots(figsize=(7, 4))
-
         colors = plt.cm.Set3(range(len(counts)))
 
-        bars = ax.bar(
-            counts.index.astype(str),
-            counts.values,
-            color=colors
-        )
-
+        ax.bar(counts.index.astype(str), counts.values, color=colors)
         ax.set_title(f"{col} – Category Distribution", fontsize=12)
         ax.set_ylabel("Count")
+
         ax.set_xticks(range(len(counts)))
         ax.set_xticklabels(counts.index.astype(str), rotation=45, ha="right")
 
-        max_val = counts.values.max()
-        ax.set_ylim(0, max_val * 1.15)
-
-        for bar in bars:
-            height = bar.get_height()
-            ax.text(
-                bar.get_x() + bar.get_width() / 2,
-                height + max_val * 0.02,
-                f"{int(height)}",
-                ha="center",
-                va="bottom",
-                fontsize=9,
-                fontweight="bold"
-            )
-
         plt.tight_layout()
 
-        # 🔴 THIS IS THE KEY FIX
-        charts[col] = _encode_plot(fig)
+        charts[str(idx)] = _encode_plot(fig)
+        valid_cols.append(col)
 
         plt.close(fig)
+        idx += 1
 
-    return charts
+    return charts, valid_cols
 
 
 def _numeric_charts(df):
     charts = {}
+    valid_cols = []
+    idx = 0
 
     for col in df.select_dtypes(include="number").columns:
         data = df[col].dropna()
-
-        # Skip empty numeric columns
         if data.empty:
             continue
 
         fig, ax = plt.subplots(figsize=(7, 4))
-
-        ax.hist(
-            data,
-            bins=30,
-            edgecolor="black"
-        )
-
+        ax.hist(data, bins=30, edgecolor="black")
         ax.set_title(f"{col} – Distribution", fontsize=12)
         ax.set_xlabel(col)
         ax.set_ylabel("Frequency")
 
         plt.tight_layout()
+        charts[str(idx)] = _encode_plot(fig)
+        valid_cols.append(col)
 
-        charts[col] = _encode_plot(fig)   # ✅ pass figure
-        plt.close(fig)                    # ✅ close explicitly
+        plt.close(fig)
+        idx += 1
 
-    return charts
+    return charts, valid_cols
+
+def _column_overview_two_column(df: pd.DataFrame) -> str:
+    """
+    Displays column name & dtype in two side-by-side tables
+    to avoid vertical scrolling for wide datasets.
+    """
+    if df is None or df.empty:
+        return "<p><i>No column information available.</i></p>"
+
+    df = df.copy()
+    df.columns = ["Column Name", "Data Type"]
+
+    mid = (len(df) + 1) // 2
+    left = df.iloc[:mid]
+    right = df.iloc[mid:]
+
+    left_html = left.to_html(
+        classes="table",
+        border=0,
+        index=False,
+        justify="center"
+    )
+
+    right_html = right.to_html(
+        classes="table",
+        border=0,
+        index=False,
+        justify="center"
+    )
+
+    return f"""
+    <div style="display:flex; gap:30px; align-items:flex-start;">
+        <div style="flex:1;">{left_html}</div>
+        <div style="flex:1;">{right_html}</div>
+    </div>
+    """
 
 
 def _data_quality_summary(df):
@@ -156,15 +165,14 @@ def eda_report(
 
     dq = _data_quality_summary(df)
     alerts = _generate_alerts(df, stats, outliers, missing)
-    cat_charts = _categorical_charts(df)
-    num_charts = _numeric_charts(df)
-    numeric_cols = df.select_dtypes(include="number").columns.tolist() 
+    num_charts, num_cols = _numeric_charts(df)
+    first_num = "0" if num_charts else None
+    cat_charts, cat_cols = _categorical_charts(df)
+    first_cat = "0" if cat_charts else None
+
 
     # ---------- Correlation logic ----------
     corr_section_html = ""
-    first_num = next(iter(num_charts)) if num_charts else None
-    first_cat = next(iter(cat_charts)) if cat_charts else None
-
     numeric_cols = df.select_dtypes(include="number").columns.tolist()
 
     if len(numeric_cols) > 10:
@@ -190,17 +198,18 @@ def eda_report(
             """
 
 
-    # ---------- Explorer Sections (Safe Rendering) ----------
 
     cat_explorer_html = (
         f"""
         <div class="section">
             <h2>6️⃣ Categorical Column Explorer</h2>
+
             <div style="text-align:center;">
                 <select onchange="document.getElementById('catImg').src = catCharts[this.value]">
-                    {''.join([f"<option value='{c}'>{c}</option>" for c in cat_charts])}
+                    {''.join([f"<option value='{i}'>{col}</option>" for i, col in enumerate(cat_cols)])}
                 </select>
             </div>
+
             <img id="catImg" src="data:image/png;base64,{cat_charts[first_cat]}" />
         </div>
         """
@@ -219,11 +228,13 @@ def eda_report(
         f"""
         <div class="section">
             <h2>7️⃣ Numeric Column Explorer</h2>
+
             <div style="text-align:center;">
                 <select onchange="document.getElementById('numImg').src = numCharts[this.value]">
-                    {''.join([f"<option value='{c}'>{c}</option>" for c in num_charts])}
+                    {''.join([f"<option value='{i}'>{col}</option>" for i, col in enumerate(num_cols)])}
                 </select>
             </div>
+
             <img id="numImg" src="data:image/png;base64,{num_charts[first_num]}" />
         </div>
         """
@@ -240,6 +251,37 @@ def eda_report(
 
 
 
+
+
+    correlation_html = (
+    f"""
+    <div class="section">
+        <h2>8️⃣ Correlation Analysis</h2>
+        {corr_section_html if corr_section_html else "<p><i>No correlation data available</i></p>"}
+    </div>
+    """
+)
+
+    missing_section_html = (
+        """
+        <p style="text-align:center;color:green;font-size:16px;font-weight:600;">
+            No missing values exist in the dataset.
+        </p>
+        """
+        if missing is None or missing.empty
+        else _df_to_html(missing)
+    )
+
+
+    outlier_section_html = (
+        """
+        <p style="text-align:center;color:green;font-size:16px;font-weight:600;">
+            No outliers exist in the dataset.
+        </p>
+        """
+        if outliers is None or outliers.empty
+        else _df_to_html(outliers)
+    )
 
     html = f"""
     <html>
@@ -338,7 +380,7 @@ def eda_report(
 
         <div class="section">
             <h2>1️⃣ Dataset Overview</h2>
-            {_df_to_html(overview["column_overview"])}
+            {_column_overview_two_column(overview["column_overview"])}
             <p><b>Duplicate Records:</b> {dq["duplicate_records"]} ({dq["duplicate_percent"]}%)</p>
             <p><b>Numeric Columns:</b> {dq["numeric_count"]}</p>
             <p><b>Categorical Columns:</b> {dq["categorical_count"]}</p>
@@ -346,8 +388,9 @@ def eda_report(
 
         <div class="section">
             <h2>2️⃣ Missing Value Analysis</h2>
-            {_df_to_html(missing)}
+            {missing_section_html}
         </div>
+
 
         <div class="section">
             <h2>3️⃣ Statistical Summary</h2>
@@ -361,11 +404,12 @@ def eda_report(
 
         <div class="section">
             <h2>5️⃣ Outlier Analysis</h2>
-            {_df_to_html(outliers)}
+            {outlier_section_html}
         </div>
 
         {cat_explorer_html}
         {num_explorer_html}
+        {correlation_html}
 
 
         <div class="section">
@@ -374,7 +418,7 @@ def eda_report(
             {"".join([
                 f"<p style='color:#b71c1c;font-weight:600;'>⚠️ {alert}</p>"
                 for alert in alerts
-            ]) if alerts else "<p style='color:green;font-weight:600;'>✅ No major data quality issues detected</p>"}
+            ]) if alerts else "<p style='color:green;font-weight:600;'> No major data quality issues detected</p>"}
         </div>
 
         <script>
