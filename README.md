@@ -34,9 +34,6 @@ However, traditional EDA is often:
 
 ❌ Repetitive
 
-❌ Hard to standardize
-
-❌ Difficult to scale
 
 ### 👉 Cognia automates this entire process.
 
@@ -57,10 +54,10 @@ COGNIA/
 │   ├── report.py               # HTML report generation engine
 │   └── stats.py                # Statistical computations
 │
-├── demo/                       # Demo & example files
-│   ├── cognia_eda_report.html  # Sample generated EDA report
-│   ├── input_file.py           # Example usage script
-│   └── labtoprice.csv          # Sample dataset
+├── demo/                                  # Demo & example files
+│   ├── EDA report on LaptopPrice Dataset  # Sample generated EDA report
+│   ├── input_file.py                      # Example usage script
+│   └── laptopPrice.csv                     # Sample dataset
 │
 ├── pyproject.toml              # Build & dependency configuration
 ├── README.md                   # Project documentation
@@ -168,5 +165,6 @@ Cognia makes that possible.
 
 
 If you find Cognia useful, don’t forget to ⭐ star the repository and share it with fellow data enthusiasts.
+
 
 
